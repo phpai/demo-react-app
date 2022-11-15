@@ -1,0 +1,11 @@
+FROM nginx:1.23
+
+# add metadata, e.g. version and author
+LABEL version="1.0"
+LABEL authors="vorname.nachname@company.com"
+
+RUN apt-get update && apt-get install git -y
+
+COPY build/ /usr/share/nginx/html/
+
+CMD ["nginx", "-g", "daemon off;"]

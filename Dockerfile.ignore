@@ -1,0 +1,4 @@
+FROM alpine
+COPY . /usr/src/app
+RUN ls -al /usr/src/app
+CMD ["ls", "-al", "/usr/src/app"]

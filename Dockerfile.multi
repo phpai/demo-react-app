@@ -1,0 +1,15 @@
+# Build Stage mit Node 
+FROM node:16-alpine as builder
+
+WORKDIR '/app'
+
+# Dateien für den Build kopieren und laufen lasse
+COPY package.json .
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# Zweite Stage, dass nur die erforderlichen Dateien hat
+FROM nginx
+COPY --from=builder /app/build /usr/share/nginx/html
