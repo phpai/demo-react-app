@@ -3,6 +3,7 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+
 trigger:
 - philip.pai
 
@@ -30,3 +31,13 @@ stages:
         command: custom
         customCommand: 'audit --registry=https://registry.npmjs.org/'
       continueOnError: true
+- stage: test
+  jobs: 
+    - job: run_unit_tests
+      variables: 
+        CI: true
+      steps:
+      - script: |
+          npm ci
+          npm test
+        displayName: 'npm test'
