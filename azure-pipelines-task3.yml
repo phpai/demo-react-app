@@ -1,0 +1,32 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- philip.pai
+
+pool:
+  vmImage: ubuntu-latest
+
+stages: 
+- stage: audit
+  jobs: 
+  - job: npm_audit_script
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSource: 'spec'
+        versionSpec: '16.x'
+    - script: |
+        npm audit
+      displayName: 'npm audit'
+      continueOnError: true
+  - job: npm_audit_task
+    steps:
+    - task: Npm@1
+      displayName: 'npm audit'
+      inputs:
+        command: custom
+        customCommand: 'audit --registry=https://registry.npmjs.org/'
+      continueOnError: true
