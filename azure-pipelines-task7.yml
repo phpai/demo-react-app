@@ -1,0 +1,26 @@
+trigger:
+  - main
+  
+pool:
+  vmImage: ubuntu-latest
+
+# task 7 - zum testen, die eigentliche konfiguration findet in azure pipelines statt
+variables:
+  - group: dev
+
+stages:
+- stage: variables
+  jobs:
+  - job: print_variables
+    steps:
+    - script: |
+        echo DATABASE_NAME: $DATABASE_NAME
+        echo DATABASE_SECRET: $DATABASE_SECRET
+        echo MY_DATABASE_SECRET: $MY_DATABASE_SECRET
+        echo CONTAINER_APP_NAME: $CONTAINER_APP_NAME
+        echo VG_ANOTHER_SECRET: $VG_ANOTHER_SECRET
+        echo MY_VG_ANOTHER_SECRET: $MY_VG_ANOTHER_SECRET
+      displayName: 'print variables'
+      env:
+        MY_DATABASE_SECRET: $(DATABASE_SECRET)
+        MY_VG_ANOTHER_SECRET: $(VG_ANOTHER_SECRET)

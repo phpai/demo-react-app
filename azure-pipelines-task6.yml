@@ -1,0 +1,78 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- philip-test
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: audit
+  jobs:
+  - job: audit_script
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '16.x'
+      displayName: 'Install Node.js'
+    - script: |
+        npm audit
+      displayName: 'npm audit'
+      continueOnError: true
+
+- stage: test
+  jobs:
+  - job: run_unit_tests
+    variables:
+      CI: true
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '16.x'
+      displayName: 'Install Node.js'
+    - script: |
+        npm ci
+        npm test
+      displayName: 'npm test'
+
+- stage: build
+  jobs:
+  - job: build_docker
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'demo-acr' # verwendet eure erstellte service connection
+        repository: 'demo/reactapp'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        # hier werden predefined variables verwendet um dynamisch den tag namen zu setzten
+        tags: |
+          $(Build.SourceBranchName)
+          $(Build.SourceVersion)
+
+# task 6 - beachtet beim az containerapp update, dass eure werte verwendet werden
+- stage: deploy
+  dependsOn: [build]
+  jobs:
+  - deployment: deploy_container_app
+    environment: 'dev'
+    strategy:
+      runOnce:
+        deploy:   
+          steps:
+          - task: AzureCLI@2
+            inputs:
+              azureSubscription: 'Demo' # verwendet eure erstellte service connection
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az config set extension.use_dynamic_install=yes_without_prompt
+
+                az containerapp update \
+                  --name "demo-react" \
+                  --resource-group "rg-demo" \
+                  --image demo.azurecr.io/demo/reactapp:'$(Build.SourceVersion)'
